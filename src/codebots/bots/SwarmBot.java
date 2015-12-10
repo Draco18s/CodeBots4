@@ -39,6 +39,9 @@ public class SwarmBot extends CodeBot {
 
     @Override
     public IPAddress selectMessageRecipient() {
+    		if(getTurnNumber() == 0) {
+    			getAddressBook().add(personalAddress(),AddressBook.AddressType.TRUSTED);
+    		}
 		cleanVars();
 		AddressBook book = getAddressBook();
 		//reply to any bots we've identified as friendly
@@ -127,7 +130,7 @@ public class SwarmBot extends CodeBot {
 		cleanVars();
 		
 		//if only 5% of the game remains, prioritize spreading the flag
-		if(getTurnNumber >= Globals.NUM_TURNS_IN_ROUND * 0.95f) {
+		if(getTurnNumber() >= Globals.NUM_TURNS_IN_ROUND * 0.95f) {
 			l = book.getAddressesOfType(AddressBook.AddressType.TO_ATTACK);
 			if(l.size() > 0) {
 				return l.get(0);
@@ -144,7 +147,7 @@ public class SwarmBot extends CodeBot {
 		
 		//skip last target during the first 5% of the game, we'd rather verify allies
 		//and collect more addresses
-		if(getTurnNumber <= Globals.NUM_TURNS_IN_ROUND * 0.05f) {
+		if(getTurnNumber() <= Globals.NUM_TURNS_IN_ROUND * 0.05f) {
 			if(getVariables().has("AttackTarget")) {
 				String target = getVariables().get("AttackTarget");
 				if(getVariables().has(target)) {
@@ -275,7 +278,7 @@ public class SwarmBot extends CodeBot {
     	}
 		//last 5% of the game, override spread to be flag, unless the flag
 		//is already the same
-		if(getTurnNumber >= Globals.NUM_TURNS_IN_ROUND * 0.95f && !gf) {
+		if(getTurnNumber() >= Globals.NUM_TURNS_IN_ROUND * 0.95f && !gf) {
 			getVariables().add("FuncToReplace","3");
 		}
     }
@@ -284,7 +287,7 @@ public class SwarmBot extends CodeBot {
     public FunctionType selectFunctionToReplace() {
 		cleanVars();
 		//if only 5% of the game remains, prioritize spreading the flag
-		if(getTurnNumber >= Globals.NUM_TURNS_IN_ROUND * 0.95f) {
+		if(getTurnNumber() >= Globals.NUM_TURNS_IN_ROUND * 0.95f) {
 			return FunctionType.GET_FLAG;
 		}
 		
