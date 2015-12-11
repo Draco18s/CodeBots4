@@ -140,7 +140,7 @@ public class SwarmBot extends DefaultCodeBot {
 				if(getVariables().has(target)) {
 					int v = getV();
 					if(v < 9 && v >= 0) {
-						return new IPAddress(target);
+						return getIPAddress(target);
 					}
 				}
 			}
@@ -196,12 +196,7 @@ public class SwarmBot extends DefaultCodeBot {
 		String trg = vars.get("SwarmTarget");
 		
 		if(trg != null) {
-			for(IPAddress n : book.allAddresses()) {
-				if(n != null && trg.equals(n.toString())) {
-					target = n;
-					break;
-				}
-			}
+			target = getIPAddress();
 		}
 		if(target != null) {
 			AddressType targetType = book.getAddressType(target);
@@ -348,4 +343,14 @@ public class SwarmBot extends DefaultCodeBot {
 		if(v > j) v = j;
 		return v;
 	}
-}
+	
+	private getIPAddress(String trg) {
+		if(trg != null) {
+			for(IPAddress n : book.allAddresses()) {
+				if(n != null && trg.equals(n.toString())) {
+					return n;
+				}
+			}
+		}
+	}
+} 
