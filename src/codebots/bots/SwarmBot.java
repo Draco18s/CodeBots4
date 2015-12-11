@@ -12,6 +12,7 @@ public class SwarmBot extends DefaultCodeBot {
 	private final List<FunctionType> funcList;
 	{
 		List<FunctionType> list = new ArrayList<FunctionType>();
+		list.add(FunctionType.GET_FLAG);
 		list.add(FunctionType.SELECT_FUNCTION_TO_BLOCK);
 		list.add(FunctionType.GET_FLAG);
 		list.add(FunctionType.SELECT_MESSAGE_RECIPIENTS);
@@ -137,7 +138,7 @@ public class SwarmBot extends DefaultCodeBot {
 				String target = getVariables().get("SwarmTarget");
 				if(getVariables().has(target)) {
 					int v = getV();
-					if(v < 8 && v >= 0) {
+					if(v < 9 && v >= 0) {
 						return new IPAddress(target);
 					}
 				}
@@ -242,7 +243,7 @@ public class SwarmBot extends DefaultCodeBot {
 			}
 			//was friendly, now only partially friendly
 			else if(f1 > 0 && targetType == AddressBook.AddressType.TRUSTED && at) {
-				book.add(m.getAddress(), AddressBook.AddressType.TO_DEFEND);
+				book.add(target, AddressBook.AddressType.TO_DEFEND);
 				if(!fb)
 					getVariables().add("FuncToReplace","0");
 				else if(!gf)
@@ -280,7 +281,7 @@ public class SwarmBot extends DefaultCodeBot {
 		//readData() determines what method we want to replace, given the target
 		if(getVariables().has("FuncToReplace")) {
 			int v = getV();
-			if(v != clamp(v,0,7)) {
+			if(v != clamp(v,0,8)) {
 				//if the stored value is not valid
 				v = 2;
 			}
