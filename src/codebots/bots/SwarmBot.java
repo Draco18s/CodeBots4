@@ -34,8 +34,8 @@ public class SwarmBot extends DefaultCodeBot {
 	private static int neuCount = 0;
 	private static int truCount = 0;
 	
-    public IPAddress selectMessageRecipient() {
-    	if(getTurnNumber() == 0) {
+	public IPAddress selectMessageRecipient() {
+		if(getTurnNumber() == 0) {
 			getAddressBook().add(personalAddress(),AddressBook.AddressType.TRUSTED);
 		}
 		cleanVars();
@@ -55,10 +55,10 @@ public class SwarmBot extends DefaultCodeBot {
 		}
 		//if no neutrals, message a random bot
 		getVariables().add("MessageType","RANDOM");
-	    return book.getAddress(getRandom().nextInt(book.size()));
-    }
-    
-    public Message sendMessage() {
+		return book.getAddress(getRandom().nextInt(book.size()));
+	}
+	
+	public Message sendMessage() {
 		cleanVars();
 		if(getVariables().has("MessageType")) {
 			if(getVariables().get("MessageType").equals("RANDOM")) {
@@ -72,11 +72,11 @@ public class SwarmBot extends DefaultCodeBot {
 		//to insure that that string is a valid IP address.  Only my processMessage
 		//will know how to handle this which prevents other bots spoofing me and
 		//gives other bots useless information.  Allows for 2-way confirmation.
-        return new Message(Message.MessageType.STOP,personalAddress());
-    }
-    
-    @Override
-    public void processMessage(IPAddress source, Message message) {
+		return new Message(Message.MessageType.STOP,personalAddress());
+	}
+	
+	@Override
+	public void processMessage(IPAddress source, Message message) {
 		cleanVars();
 		AddressBook book = getAddressBook();
 		if(message.getType() == Message.MessageType.STOP) {
@@ -107,9 +107,9 @@ public class SwarmBot extends DefaultCodeBot {
 			if(book.getAddressType(message.getAddress()) != null)
 				book.add(message.getAddress(),AddressBook.AddressType.NEUTRAL);
 		}
-    }
-    
-    public IPAddress selectAttackTarget() {
+	}
+	
+	public IPAddress selectAttackTarget() {
 		cleanVars();
 		AddressBook book = getAddressBook();
 		List<IPAddress> l;
@@ -124,7 +124,7 @@ public class SwarmBot extends DefaultCodeBot {
 		
 		//target last target first
 		//then target test untrusted (to see if they are allies)
-    	//then target corrupted allies
+		//then target corrupted allies
 		//then target enemies
 		//then target neutrals
 		//then target allies (to insure they are still allies)
@@ -160,7 +160,7 @@ public class SwarmBot extends DefaultCodeBot {
 				atkCount++;
 				rr = book.getAddress(getRandom().nextInt(book.size()));
 				getVariables().add("SwarmTarget",rr.toString());
-		        return rr;
+				return rr;
 				//return l.get(0);
 			}
 		}
@@ -181,27 +181,28 @@ public class SwarmBot extends DefaultCodeBot {
 		
 		rr = book.getAddress(getRandom().nextInt(book.size()));
 		getVariables().add("SwarmTarget",rr.toString());
-        return rr;
-    }
+		return rr;
+	}
 
 	@Override
-    public void readData(ReadonlyBot bot) {
-    	cleanVars();
-    	
-    	AddressBook book = getAddressBook();
-    	Variables vars = getVariables();
-    	IPAddress target = null;
-    	String trg = vars.get("SwarmTarget");
-    	
-    	if(trg != null) {
-	    	for(IPAddress n : book.allAddresses()) {
-	    		if(n != null && trg.equals(n.toString())) {
-	    			target = n;
-	    			break;
-	    		}
-	    	}
-    	}
-    	if(target != null) {
+	public void readData(ReadonlyBot bot) {
+		cleanVars();
+		
+		AddressBook book = getAddressBook();
+		Variables vars = getVariables();
+		IPAddress target = null;
+		String trg = vars.get("SwarmTarget");
+		
+		if(trg != null) {
+			for(IPAddress n : book.allAddresses()) {
+				if(n != null && trg.equals(n.toString())) {
+					target = n;
+					break;
+				}
+			}
+		}
+		if(target != null) {
+			AddressType targetType = book.getAddressType(target);
 			boolean fb = this.functionsMatch(bot,FunctionType.SELECT_FUNCTION_TO_BLOCK);
 			boolean mr = this.functionsMatch(bot,FunctionType.SELECT_MESSAGE_RECIPIENTS);
 			boolean gf = this.functionsMatch(bot,FunctionType.GET_FLAG);
@@ -220,7 +221,7 @@ public class SwarmBot extends DefaultCodeBot {
 			//largely speaking, they're friendly
 			if(f1 > 3) {
 				book.add(target, AddressBook.AddressType.TRUSTED);
-				if(pm) {
+				if(pm) {//this is the last method replaced
 					//they're friendly, don't attack them next turn
 					getVariables().remove("AttackTarget");
 					//replace semi-random method
@@ -233,21 +234,43 @@ public class SwarmBot extends DefaultCodeBot {
 					getVariables().add("FuncToReplace",""+v);
 				}
 				else {
-					//ever method matches, remove for next turn
+					//every method matches, remove for next turn
 					getVariables().remove("AttackTarget");
-					//doesn't matter this turn what we do
+					//doesn't matter what we do this turn
 					getVariables().add("FuncToReplace",""+(getTurnNumber()%8));
 				}
 			}
-			else {
-	            book.add(target, AddressBook.AddressType.TO_ATTACK);
-	            int v = getV()+1;
-				getVariables().add("FuncToReplace",""+v);
+			//was friendly, now only partially friendly
+			else if(f1 > 0 && targetType == AddressBook.AddressType.TRUSTED && at) {
+				book.add(m.getAddress(), AddressBook.AddressType.TO_DEFEND);
+				if(!fb)
+					getVariables().add("FuncToReplace","0");
+				else if(!gf)
+					getVariables().add("FuncToReplace","3");
+				else if(!rd)
+					getVariables().add("FuncToReplace","4");
+				else if(!fr)
+					getVariables().add("FuncToReplace","5");
 			}
-    	}
-    }
-    
-    public FunctionType selectFunctionToReplace() {
+			//only partially friendly, mismatched target selection
+			else if(f1 > 0) {
+				getVariables().add("FuncToReplace","6");
+			}
+			//not friendly at all
+			else {
+				book.add(target, AddressBook.AddressType.TO_ATTACK);
+				if(getVariables().has("AttackTarget")) {
+					int v = getV()+1;
+					getVariables().add("FuncToReplace",""+v);
+				}
+				else {
+					getVariables().add("FuncToReplace","0");
+				}
+			}
+		}
+	}
+	
+	public FunctionType selectFunctionToReplace() {
 		cleanVars();
 		//if only 5% of the game remains, prioritize spreading the flag
 		if(getTurnNumber() >= Globals.NUM_TURNS_IN_ROUND * 0.95f) {
@@ -263,33 +286,36 @@ public class SwarmBot extends DefaultCodeBot {
 			}
 			return funcList.get(v);
 		}
+		else {
+			getVariables().add("FuncToReplace","1");
+		}
 		//by default, replace selectFunctionToBlock()
-        return FunctionType.SELECT_FUNCTION_TO_BLOCK;
-    }
+		return FunctionType.SELECT_FUNCTION_TO_BLOCK;
+	}
 
 	public FunctionType selectFunctionToBlock() {
-    	cleanVars();
-    	if(this.getTurnNumber() <= 1) {
-            return FunctionType.GET_FLAG;
-    	}
-        return FunctionType.SELECT_FUNCTION_TO_BLOCK;
-    }
-    
-    public String getFlag(){
-    	//AddressBook book = getAddressBook();
-    	//System.out.println("Friends: " + book.getAddressesOfType(AddressType.TRUSTED).size());
-    	if(atkCount > 0) {
-    		System.out.println("atk: " + atkCount);
-    		System.out.println("tru: " + truCount);
-    		System.out.println("neu: " + neuCount);
-    		atkCount = 0;
-    		truCount = 0;
-    		neuCount = 0;
-    	}
-        return TEAM;
-    }
+		cleanVars();
+		if(this.getTurnNumber() <= 1) {
+			return FunctionType.GET_FLAG;
+		}
+		return FunctionType.SELECT_FUNCTION_TO_BLOCK;
+	}
+	
+	public String getFlag(){
+		//AddressBook book = getAddressBook();
+		//System.out.println("Friends: " + book.getAddressesOfType(AddressType.TRUSTED).size());
+		if(atkCount > 0) {
+			System.out.println("atk: " + atkCount);
+			System.out.println("tru: " + truCount);
+			System.out.println("neu: " + neuCount);
+			atkCount = 0;
+			truCount = 0;
+			neuCount = 0;
+		}
+		return TEAM;
+	}
 
-    private int getV() {
+	private int getV() {
 		try {
 			//attempt to read and parse
 			return Integer.parseInt(getVariables().get("FuncToReplace"));
@@ -299,7 +325,7 @@ public class SwarmBot extends DefaultCodeBot {
 			return -1;
 		}
 	}
-    
+	
 	private void cleanVars() {
 		//we need to insure we don't accidentally clear out the key:value pair
 		//corresponding to our attack target
@@ -313,10 +339,10 @@ public class SwarmBot extends DefaultCodeBot {
 		//clean our own logs too
 		getLog().clear();
 	}
-    
-    private int clamp(int v, int i, int j) {
-    	if(v < i) v = i;
-    	if(v > j) v = j;
+	
+	private int clamp(int v, int i, int j) {
+		if(v < i) v = i;
+		if(v > j) v = j;
 		return v;
 	}
 }
