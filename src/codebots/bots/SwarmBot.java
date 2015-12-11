@@ -94,9 +94,9 @@ public class SwarmBot extends DefaultCodeBot {
 			}
 			else {
 				//this message isn't from me an actual friendly, must be an enemy trying to spoof!
-				if(book.getAddressType(source) != null)
+				if(book.getAddressType(source) == null)
 					book.add(source,AddressBook.AddressType.TO_ATTACK);
-				if(book.getAddressType(message.getAddress()) != null)
+				if(message.getAddress() != null && book.getAddressType(message.getAddress()) == null)
 					book.add(message.getAddress(),AddressBook.AddressType.TO_ATTACK);
 			}
 		}
@@ -104,9 +104,9 @@ public class SwarmBot extends DefaultCodeBot {
 			//this address sent me a message, categorize them as neutral
 			//also categorize the IP they sent along as neutral
 			//assuming we know nothing
-			if(book.getAddressType(source) != null)
+			if(book.getAddressType(source) == null)
 				book.add(source,AddressBook.AddressType.NEUTRAL);
-			if(book.getAddressType(message.getAddress()) != null)
+			if(message.getAddress() != null && book.getAddressType(message.getAddress()) == null)
 				book.add(message.getAddress(),AddressBook.AddressType.NEUTRAL);
 		}
 	}
@@ -196,7 +196,7 @@ public class SwarmBot extends DefaultCodeBot {
 		String trg = vars.get("SwarmTarget");
 		
 		if(trg != null) {
-			target = getIPAddress();
+			target = getIPAddress(trg);
 		}
 		if(target != null) {
 			AddressType targetType = book.getAddressType(target);
@@ -345,6 +345,7 @@ public class SwarmBot extends DefaultCodeBot {
 	}
 	
 	private IPAddress getIPAddress(String trg) {
+		AddressBook book = getAddressBook();
 		if(trg != null) {
 			for(IPAddress n : book.allAddresses()) {
 				if(n != null && trg.equals(n.toString())) {
