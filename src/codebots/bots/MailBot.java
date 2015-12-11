@@ -1,14 +1,18 @@
 package codebots.bots;
 
-import codebots.bot.CodeBot;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import codebots.bot.ReadonlyBot;
+import codebots.gameobjects.AddressBook;
 import codebots.gameobjects.FunctionType;
 import codebots.gameobjects.IPAddress;
 import codebots.gameobjects.Message;
 
 public class MailBot extends DefaultCodeBot {
-	private final string TEAM = "Just your friendly neighborhood mail delivering robot.";
-	private final string TEAMALT = "Mailmain";
+	private final String TEAM = "Just your friendly neighborhood mail delivering robot.";
+	private final String TEAMALT = "Mailmain";
 	private final List<FunctionType> funcList;
 	{
 		List<FunctionType> list = new ArrayList<FunctionType>();
@@ -22,14 +26,14 @@ public class MailBot extends DefaultCodeBot {
     public IPAddress selectMessageRecipient() {
 		AddressBook book = getAddressBook();
 		IPAddress ip;
-		l = book.getAddressesOfType(AddressBook.AddressType.TO_ATTACK);
+		List<IPAddress> l = book.getAddressesOfType(AddressBook.AddressType.TO_ATTACK);
 		if(l.size() > 0) {
 			ip = l.get(0);
-			book.add(ip,UNTRUSTED);
+			book.add(ip,AddressBook.AddressType.UNTRUSTED);
 			return ip;
 		}
-		ip = book.get(getRandom().nextInt(book.size));
-		book.add(ip,UNTRUSTED);
+		ip = book.getAddress(getRandom().nextInt(book.size()));
+		book.add(ip,AddressBook.AddressType.UNTRUSTED);
         return ip;
     }
 
@@ -38,15 +42,15 @@ public class MailBot extends DefaultCodeBot {
 		AddressBook book = getAddressBook();
 		IPAddress ip;
 		
-		l = book.getAddressesOfType(AddressBook.AddressType.UNTRUSTED);
+		List<IPAddress> l = book.getAddressesOfType(AddressBook.AddressType.UNTRUSTED);
 		if(l.size() > 0) {
 			ip = l.get(0);
-			book.add(ip,TO_DEFEND);
+			book.add(ip,AddressBook.AddressType.TO_DEFEND);
 			return new Message(Message.MessageType.INFORM,ip);
 		}
 		
-		ip = book.get(getRandom().nextInt(book.size));
-		book.add(ip,UNTRUSTED);
+		ip = book.getAddress(getRandom().nextInt(book.size()));
+		book.add(ip,AddressBook.AddressType.UNTRUSTED);
         return new Message(Message.MessageType.INFORM,ip);
     }
 
@@ -54,7 +58,8 @@ public class MailBot extends DefaultCodeBot {
     public void processMessage(IPAddress source, Message message) {
 		AddressBook book = getAddressBook();
 		book.add(source,AddressBook.AddressType.TO_ATTACK);
-		book.add(message.getAddress(),AddressBook.AddressType.TO_ATTACK);
+		if(message.getAddress() != null)
+			book.add(message.getAddress(),AddressBook.AddressType.TO_ATTACK);
     }
 
     @Override
