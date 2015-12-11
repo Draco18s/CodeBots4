@@ -344,7 +344,7 @@ public class SwarmBot extends DefaultCodeBot {
 		return v;
 	}
 	
-	private getIPAddress(String trg) {
+	private IPAddress getIPAddress(String trg) {
 		if(trg != null) {
 			for(IPAddress n : book.allAddresses()) {
 				if(n != null && trg.equals(n.toString())) {
@@ -352,5 +352,6 @@ public class SwarmBot extends DefaultCodeBot {
 				}
 			}
 		}
+		return null;
 	}
 } 
