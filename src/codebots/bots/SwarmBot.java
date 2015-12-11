@@ -31,9 +31,9 @@ public class SwarmBot extends DefaultCodeBot {
 		list.add("MessageType");
 		varList = Collections.unmodifiableList(list);
 	}
-	private static int atkCount = 0;
+	/*private static int atkCount = 0;
 	private static int neuCount = 0;
-	private static int truCount = 0;
+	private static int truCount = 0;*/
 	
 	public IPAddress selectMessageRecipient() {
 		if(getTurnNumber() == 0) {
@@ -63,16 +63,17 @@ public class SwarmBot extends DefaultCodeBot {
 		cleanVars();
 		if(getVariables().has("MessageType")) {
 			if(getVariables().get("MessageType").equals("RANDOM")) {
-				//messaging an arbitrary bot and tell it to attack a target
-				//target chosen uses this class's code, not the *bot's*
+				//messaging an arbitrary bot and send it a target
+				//chosen uses this class's code, not the *bot's*
 				//current selectAttackTarget()
+				
+				//the original intent was to send an ATTACK message, but switching to
+				//HELP actually provided a boost in effectiveness.
 				return new Message(Message.MessageType.HELP,this.selectAttackTarget());
 			}
 		}
-		//this is cheating: IPAddress takes a string parameter and makes no attempt
-		//to insure that that string is a valid IP address.  Only my processMessage
-		//will know how to handle this which prevents other bots spoofing me and
-		//gives other bots useless information.  Allows for 2-way confirmation.
+		//communicate with others of this bot type.  STOP instruction also keeps MarkedBot
+		//from treating us as hostile.
 		return new Message(Message.MessageType.STOP,personalAddress());
 	}
 	
@@ -158,7 +159,7 @@ public class SwarmBot extends DefaultCodeBot {
 		if(getRandom().nextBoolean()) {
 			l = book.getAddressesOfType(AddressBook.AddressType.TO_ATTACK);
 			if(l.size() > 0) {
-				atkCount++;
+				//atkCount++;
 				rr = book.getAddress(getRandom().nextInt(book.size()));
 				getVariables().add("SwarmTarget",rr.toString());
 				return rr;
@@ -168,18 +169,18 @@ public class SwarmBot extends DefaultCodeBot {
 		if(getRandom().nextBoolean()) {
 			l = book.getAddressesOfType(AddressBook.AddressType.TRUSTED);
 			if(l.size() > 0) {
-				truCount++;
+				//truCount++;
 				getVariables().add("SwarmTarget",l.get(0).toString());
 				return l.get(0);
 			}
 		}
 		l = book.getAddressesOfType(AddressBook.AddressType.NEUTRAL);
 		if(l.size() > 0) {
-			neuCount++;
+			//neuCount++;
 			getVariables().add("SwarmTarget",l.get(0).toString());
 			return l.get(0);
 		}
-		
+		//fall back to a random address
 		rr = book.getAddress(getRandom().nextInt(book.size()));
 		getVariables().add("SwarmTarget",rr.toString());
 		return rr;
@@ -305,14 +306,14 @@ public class SwarmBot extends DefaultCodeBot {
 	public String getFlag(){
 		//AddressBook book = getAddressBook();
 		//System.out.println("Friends: " + book.getAddressesOfType(AddressType.TRUSTED).size());
-		if(atkCount > 0) {
+		/*if(atkCount > 0) {
 			System.out.println("atk: " + atkCount);
 			System.out.println("tru: " + truCount);
 			System.out.println("neu: " + neuCount);
 			atkCount = 0;
 			truCount = 0;
 			neuCount = 0;
-		}
+		}*/
 		return TEAM;
 	}
 
@@ -341,6 +342,7 @@ public class SwarmBot extends DefaultCodeBot {
 		getLog().clear();
 	}
 	
+	//Because Math was lacking it
 	private int clamp(int v, int i, int j) {
 		if(v < i) v = i;
 		if(v > j) v = j;
