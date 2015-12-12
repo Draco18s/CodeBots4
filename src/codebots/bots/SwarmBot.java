@@ -115,12 +115,12 @@ public class SwarmBot extends DefaultCodeBot {
 		cleanVars();
 		AddressBook book = getAddressBook();
 		List<IPAddress> l;
-		//if only 5% of the game remains, prioritize spreading the flag
-		if(getTurnNumber() >= Globals.NUM_TURNS_IN_ROUND * 0.95f) {
+		//if only 10% of the game remains, prioritize spreading the flag
+		if(getTurnNumber() >= Globals.NUM_TURNS_IN_ROUND * 0.90f) {
 			l = book.getAddressesOfType(AddressBook.AddressType.TO_ATTACK);
 			if(l.size() > 0) {
 				getVariables().add("SwarmTarget",l.get(0).toString());
-				return l.get(0);
+				return l.get(getRandom().nextInt(l.size()));
 			}
 		}
 		
@@ -132,9 +132,9 @@ public class SwarmBot extends DefaultCodeBot {
 		//then target allies (to insure they are still allies)
 		//finally target random address
 		
-		//skip last target during the first 5% of the game, we'd rather verify allies
+		//skip last target during the first 8% of the game, we'd rather verify allies
 		//and collect more addresses
-		if(getTurnNumber() <= Globals.NUM_TURNS_IN_ROUND * 0.05f) {
+		if(getTurnNumber() >= Globals.NUM_TURNS_IN_ROUND * 0.08f) {
 			if(getVariables().has("SwarmTarget")) {
 				String target = getVariables().get("SwarmTarget");
 				if(getVariables().has(target)) {
@@ -270,6 +270,8 @@ public class SwarmBot extends DefaultCodeBot {
 	public FunctionType selectFunctionToReplace() {
 		cleanVars();
 		//if only 5% of the game remains, prioritize spreading the flag
+		//interestingly, setting this to 10% (matching target selection)
+		//actually makes the bot worse
 		if(getTurnNumber() >= Globals.NUM_TURNS_IN_ROUND * 0.95f) {
 			return FunctionType.GET_FLAG;
 		}
